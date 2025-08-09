@@ -10,8 +10,11 @@ An MCP (Model Context Protocol) server implementation that integrates Claude wit
 ## Features
 
 * **Natural Language Task Management**: Create, update, complete, and delete tasks using everyday language
-* **Smart Task Search**: Find tasks using partial name matches
-* **Flexible Filtering**: Filter tasks by due date, priority, and other attributes
+* **Safer Targeting**: Use `task_id` where available; when searching by name, the server disambiguates multiple matches
+* **Flexible Filtering**: Filter tasks by `project_name|id`, `label_name`, natural language `filter`, `priority`, and `limit`
+* **Richer Reads**: List projects, labels, and sections; get projects with their open tasks in a single call
+* **Project & Sections Management**: Create/rename/delete projects; create sections
+* **Completed Tasks**: Fetch completed tasks with optional project and date filters
 * **Rich Task Details**: Support for descriptions, due dates, and priority levels
 * **Intuitive Error Handling**: Clear feedback for better user experience
 
@@ -34,34 +37,49 @@ npm install -g @abhiz123/todoist-mcp-server
 
 ### todoist_create_task
 Create new tasks with various attributes:
-* Required: content (task title)
-* Optional: description, due date, priority level (1-4)
+* Required: `content` (task title)
+* Optional: `project_name|project_id`, `section_name|section_id`, `parent_task_name|parent_task_id`, `description`, `due_string`, priority level (1-4)
 * Example: "Create task 'Team Meeting' with description 'Weekly sync' due tomorrow"
 
 ### todoist_get_tasks
 Retrieve and filter tasks:
-* Filter by due date, priority, or project
-* Natural language date filtering
-* Optional result limit
+* Filter by `project_name|id`, `label_name`, natural language `filter` (e.g. today/overdue), `priority`, and `limit`
 * Example: "Show high priority tasks due this week"
 
 ### todoist_update_task
 Update existing tasks using natural language search:
-* Find tasks by partial name match
-* Update any task attribute (content, description, due date, priority)
+* Target by `task_id` (preferred) or `task_name` (+ optional `project_name`)
+* Update any task attribute (`content`, `description`, `due_string`, `priority`)
 * Example: "Update meeting task to be due next Monday"
 
 ### todoist_complete_task
 Mark tasks as complete using natural language search:
-* Find tasks by partial name match
+* Target by `task_id` or `task_name` (+ optional `project_name`)
 * Confirm completion status
 * Example: "Mark the documentation task as complete"
 
 ### todoist_delete_task
 Remove tasks using natural language search:
-* Find and delete tasks by name
+* Target by `task_id` or `task_name` (+ optional `project_name`)
 * Confirmation messages
 * Example: "Delete the PR review task"
+
+### todoist_list_projects
+List all projects with their ids and names.
+
+### todoist_list_labels
+List all labels with their ids and names.
+
+### todoist_list_sections
+List sections, optionally filtered by `project_name|project_id`.
+
+### todoist_get_projects_with_tasks
+List projects and their open tasks in a single call.
+* Optional: `project_name`, `include_empty`, `limit_per_project`, `label_name`, `filter`, `priority`.
+
+### todoist_get_completed_tasks
+List completed tasks with optional filters.
+* Optional: `project_name|project_id`, `since`, `until`, `limit`.
 
 ## Setup
 
@@ -105,6 +123,16 @@ Add to your `claude_desktop_config.json`:
 "Show tasks due this week"
 ```
 
+### Projects with Tasks (single call)
+```
+"Show my projects with up to 3 tasks each"
+```
+
+### Completed Tasks
+```
+"Show last 5 completed tasks"
+```
+
 ### Updating Tasks
 ```
 "Update documentation task to be due next week"
@@ -129,13 +157,13 @@ Add to your `claude_desktop_config.json`:
 ### Building from source
 ```bash
 # Clone the repository
-git clone https://github.com/abhiz123/todoist-mcp-server.git
+git clone https://github.com/danielnie777/todoist-mcp-server.git
 
 # Navigate to directory
 cd todoist-mcp-server
 
-# Install dependencies
-npm install
+# Install dependencies and build
+npm ci && npm run build
 
 # Build the project
 npm run build
